@@ -7,7 +7,7 @@ namespace json{
 
 
 #ifdef BOOST_SHARED_PTR
-	#include "boost/shared_ptr.h"
+	#include "boost/shared_ptr.hpp"
 	
 	typedef boost::shared_ptr<ptr_map_object> map_ptr;
 	typedef boost::shared_ptr<ptr_array_object> array_ptr;

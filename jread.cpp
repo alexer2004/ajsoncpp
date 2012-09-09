@@ -3,11 +3,28 @@
 #include <locale>
 #include <iomanip>
 #include "type_ptr.h"
+#include <sstream>
+#ifdef JSON_FAST_STR_CONVERSATION
+#include <stdio.h>
+#endif
 
+
+#ifdef BOOST_SHARED_PTR
+#include "boost/make_shared.hpp" 
+namespace json{
+	using namespace boost;
+}
+	
+#else
+namespace json{
+	using namespace std::tr1;
+}
+#endif
 
 namespace json{
 
-	
+
+
 enum token_value
 {
 	NAME,
@@ -31,6 +48,10 @@ enum token_value
 
 };
 
+inline int str_to_int(const string&);
+
+inline double str_to_double(const string&);
+
 token_value get_token(std::istream&); 
 
 
@@ -50,6 +71,33 @@ object_ptr get_boolean_object(std::istream&);
 
 object_ptr get_empty_object(std::istream&);
 
+inline int str_to_int(const string& s)
+{
+#ifdef JSON_FAST_STR_CONVERSATION
+	return atoi(s.c_str);
+#else
+	int val = 0;
+	std::stringstream stream;
+	stream.imbue(std::locale::classic());
+	stream << s;
+    stream >> val;    
+	return val;
+#endif
+}
+
+inline double str_to_double(const string& s)
+{
+#ifdef JSON_FAST_STR_CONVERSATION
+	return atof(s.c_str);
+#else
+	double val = 0.0;
+	std::stringstream stream;
+	stream.imbue(std::locale::classic());
+	stream << s;
+    stream >> val;    
+	return val;
+#endif
+}
 
 
 
@@ -73,7 +121,11 @@ std::istream& operator>>(std::istream& s, root& r)
 
 const root read(const string&)
 {
-	return root();
+	std::stringstream stream;
+	stream.imbue(std::locale::classic());
+	root r;
+	stream >> r;
+	return r;
 }
 
 object_ptr get_object(std::istream& s, token_value t)
@@ -105,6 +157,8 @@ object_ptr get_object(std::istream& s, token_value t)
 
 const string get_string(std::istream& s)
 {
+	string str;
+	str.reserve(80);
 	return string();
 }
 
@@ -145,7 +199,7 @@ object_ptr get_map_object(std::istream& s)
 			throw std::runtime_error("irregular token: get_map_object wait for RFP");
 		}
 	}
-	return std::make_shared<ptr_map_object>(map);
+	return make_shared<ptr_map_object>(map);
 }
 
 object_ptr get_array_object(std::istream& s)
@@ -168,24 +222,39 @@ object_ptr get_array_object(std::istream& s)
 			throw std::runtime_error("irregular token: get_array_object wait for RRP");
 		}
 	}
-	return std::make_shared<ptr_array_object>(arr);
+	return make_shared<ptr_array_object>(arr);
 }
 
 object_ptr get_string_object(std::istream& s)
 {
-	return std::make_shared<string_object>(get_string(s));
+	return make_shared<string_object>(get_string(s));
 }
 
 object_ptr get_number_object(std::istream& s)
 {
-	return std::make_shared<int_object>(1);
+	string str;
+	str.reserve(40);
+	char ch = 0;
+	s.get(ch);
+	while(std::isdigit(ch, std::locale::classic()) || ch == 'e' || ch == 'E' || ch == '.' || ch == '-' || ch == '+')
+	{
+		str += ch;
+		ch = 0;
+		s.get(ch);
+	}
+	s.putback(ch);
+	if(str.find_first_of('.') != string::npos)
+	{
+		return make_shared<double_object>(str_to_double(str));
+	}
+	return make_shared<int_object>(str_to_int(str));
 }
 
 object_ptr get_boolean_object(std::istream& s)
 {
 	bool b;
 	s >> std::boolalpha >> b;
-	return std::make_shared<bool_object>(b);
+	return make_shared<bool_object>(b);
 }
 
 object_ptr get_empty_object(std::istream& s)
@@ -196,7 +265,7 @@ object_ptr get_empty_object(std::istream& s)
 	{	
 		throw std::runtime_error("irregular token: get_empty_object wait for null");
 	}
-	return std::make_shared<null_object>();
+	return make_shared<null_object>();
 }
 
 token_value get_token(std::istream& stream)
@@ -238,7 +307,7 @@ token_value get_token(std::istream& stream)
 		break;
 	case '0':case'1':case '2':case'3':
 	case '4':case'5':case '6':case'7':
-	case '8':case'9':case'.':
+	case '8':case'9':case'.':case'-':
 		token = NUMBER;
 		stream.putback(ch);
 		break;

@@ -6,7 +6,7 @@
 #include <deque>
 
 #ifdef BOOST_SHARED_PTR
-	#include "boost/shared_ptr.h"
+	#include "boost/shared_ptr.hpp"
 	namespace json{
 		typedef boost::shared_ptr<object> object_ptr;
 	}
