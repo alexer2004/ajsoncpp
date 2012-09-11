@@ -7,9 +7,9 @@
 
 int main(int argc, char* argv[])
 {
-	std::fstream file("sample.json", std::ios_base::in);
 	json::root root;
-	file >> root;
+	std::fstream file1("pass1.json", std::ios_base::in);
+	file1 >> root;
 	return 0;
 }
 

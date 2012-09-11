@@ -4,6 +4,7 @@
 #include <iomanip>
 #include "type_ptr.h"
 #include <sstream>
+#include <algorithm>
 #ifdef JSON_FAST_STR_CONVERSATION
 #include <stdio.h>
 #endif
@@ -48,6 +49,37 @@ enum token_value
 
 };
 
+struct unicode_decoder
+{
+	unsigned int count;
+	void operator()(char ch)
+	{
+		count *= 16;
+		if(std::isdigit(ch, std::locale::classic()))
+		{
+			count += ch - '0';
+		}
+		else
+		{
+			if(ch >= 'a' || ch <= 'f')
+			{
+				count += ch - 'a' + 10;
+			}
+			else
+			{
+				if(ch >= 'A' || ch <= 'F')
+				{
+					count += ch - 'A' + 10;
+				}
+				else
+					throw std::runtime_error("bad unicode sequence: unicode_decoder");
+			}
+		}
+	}
+};
+
+
+
 inline int str_to_int(const string&);
 
 inline double str_to_double(const string&);
@@ -56,6 +88,12 @@ token_value get_token(std::istream&);
 
 
 const string get_string(std::istream&);
+
+const string get_escape_sequence(std::istream&);
+
+unsigned int get_unicode_code_point(std::istream&);
+
+const string code_point_to_utf8(unsigned int);
 
 object_ptr get_object(std::istream&, token_value);
 
@@ -159,7 +197,127 @@ const string get_string(std::istream& s)
 {
 	string str;
 	str.reserve(80);
-	return string();
+	char ch = 0;
+	if(!s.get(ch))
+		throw std::runtime_error("bad stream: get_array_object");
+	while(ch != '"')
+	{
+		switch(ch)
+		{
+		case '\\':
+			str += get_escape_sequence(s);
+			break;
+		default:
+			str += ch;
+		}
+		if(!s.get(ch))
+			throw std::runtime_error("bad stream: get_string");
+	}
+
+	return str;
+}
+
+const string get_escape_sequence(std::istream& s)
+{
+	string str;
+	str.reserve(1);
+	char ch = 0;
+	if(!s.get(ch))
+		throw std::runtime_error("bad stream: get_escape_sequence");
+	switch(ch)
+	{
+	case '"':
+	case '\\':
+	case '/':
+		str[0] = ch;
+		break;
+	case 'u':
+		str = code_point_to_utf8(get_unicode_code_point(s));
+		break;
+	case 'b':
+		str[0] = '\b';
+		break;
+	case 'f':
+		str[0] = '\f';
+		break;
+	case 'n':
+		str += '\n';
+		break;
+	case 'r':
+		str[0] = '\r';
+	    break;
+	 case 't':
+		str[0] = '\t';
+		break;
+	 default:
+		throw std::runtime_error("bad escape sequence: get_escape_sequence");
+	}
+	return str;
+}
+
+unsigned int get_unicode_code_point(std::istream& s)
+{
+	string str;
+	str.reserve(4);
+	s >> std::setw(4) >> str >> std::setw(0);
+	if(str.size() != 4)
+		throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected 4 characters");
+	unsigned int code =  std::for_each(str.begin(), str.end(), unicode_decoder()).count;
+	if(code >= 0xD800 && code <= 0xDBFF)
+	{
+		char ch = 0;
+		if(!s.get(ch))
+			throw std::runtime_error("bad stream: get_unicode_code_point");
+		if(ch == '\\')
+		{
+			if(!s.get(ch))
+				throw std::runtime_error("bad stream: get_unicode_code_point");
+			if(ch == 'u')
+			{
+				s >> std::setw(4) >> str >> std::setw(0);
+				if(str.size() != 4)
+					throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected 4 characters");
+				code = 0x10000 + ((code & 0x3ff) << 10) + (std::for_each(str.begin(), str.end(), unicode_decoder()).count & 0x3ff);
+			}
+			else
+				throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected 'u'");
+		}
+		else
+			throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected '\\'");
+	}
+	return code;
+}
+
+const string code_point_to_utf8(unsigned int code)
+{
+	std::string str;
+	if(code <= 0x7f) 
+	{
+      str.resize(1);
+      str[0] = static_cast<char>(code);
+	} 
+	else if(code <= 0x7FF) 
+	{
+		str.resize(2);
+		str[1] = static_cast<char>(0x80 | (0x3f & code));
+		str[0] = static_cast<char>(0xC0 | (0x1f & (code >> 6)));
+	} 
+	else if(code <= 0xFFFF) 
+	{
+		str.resize(3);
+		str[2] = static_cast<char>(0x80 | (0x3f & code));
+		str[1] = static_cast<char>(0x80 | ((0x3f & (code >> 6))));
+		str[0] = static_cast<char>(0xE0 | ((0xf & (code >> 12))));
+	}
+	else if(code <= 0x10FFFF) 
+	{
+		str.resize(4);
+		str[3] = static_cast<char>(0x80 | (0x3f & code));
+		str[2] = static_cast<char>(0x80 | (0x3f & (code >> 6)));
+		str[1] = static_cast<char>(0x80 | (0x3f & (code >> 12)));
+		str[0] = static_cast<char>(0xF0 | (0x7 & (code >> 18)));
+	}
+	return str;
 }
 
 
@@ -169,26 +327,23 @@ object_ptr get_map_object(std::istream& s)
 	ptr_map map;
 	string str;
 	char ch = 0;
-	s.get(ch);
+	if(!s.get(ch))
+		throw std::runtime_error("bad stream : get_map_object");
 	if(ch != RFP)
 	{
 		s.putback(ch);
 		do
 		{		
-			switch(get_token(s))
+			if(STRING == get_token(s))
 			{
-			case STRING:
 				str = get_string(s);
-				break;
-			default:
+			}
+			else
+			{
 				throw std::runtime_error("irregular token: get_map_object wait for quote");
-			}		
-			switch(get_token(s))
+			}
+			if(COLON != get_token(s))
 			{
-			case COLON:
-				str = get_string(s);
-				break;
-			default:
 				throw std::runtime_error("irregular token: get_map_object wait for colon");
 			}
 			map.insert(std::make_pair(str, get_object(s, get_token(s))));
@@ -208,7 +363,8 @@ object_ptr get_array_object(std::istream& s)
 	ptr_array arr;
 	string str;
 	char ch = 0;
-	s.get(ch);
+	if(!s.get(ch))
+		throw std::runtime_error("bad stream: get_array_object");
 	if(ch != RRP)
 	{
 		s.putback(ch);
@@ -235,12 +391,14 @@ object_ptr get_number_object(std::istream& s)
 	string str;
 	str.reserve(40);
 	char ch = 0;
-	s.get(ch);
+	if(!s.get(ch))
+		throw std::runtime_error("bad stream: get_number_object");
 	while(std::isdigit(ch, std::locale::classic()) || ch == 'e' || ch == 'E' || ch == '.' || ch == '-' || ch == '+')
 	{
 		str += ch;
 		ch = 0;
-		s.get(ch);
+		if(!s.get(ch))
+			throw std::runtime_error("bad stream: get_number_object");
 	}
 	s.putback(ch);
 	if(str.find_first_of('.') != string::npos)
@@ -260,7 +418,7 @@ object_ptr get_boolean_object(std::istream& s)
 object_ptr get_empty_object(std::istream& s)
 {
 	string str;
-	s >> std::setw(4) >> str;
+	s >> std::setw(4) >> str >> std::setw(0);
 	if(str != "null")
 	{	
 		throw std::runtime_error("irregular token: get_empty_object wait for null");
