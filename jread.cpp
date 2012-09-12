@@ -425,20 +425,7 @@ object_ptr get_number_object(std::istream& s)
 	char ch = 0;
 	if(!s.get(ch))
 		throw std::runtime_error("bad stream: get_number_object");
-	if(ch == '0')
-	{
-		ch = 0;
-		if(!s.get(ch))
-			throw std::runtime_error("bad stream: get_number_object");
-		if(ch == '.')
-		{
-			str += '0';
-		}
-		else
-		{
-			throw std::runtime_error("number cannot have leading zeroes: get_number_object");
-		}
-	}
+	
 	while(std::isdigit(ch, std::locale::classic()) || ch == 'e' || ch == 'E' || ch == '.' || ch == '-' || ch == '+')
 	{
 		str += ch;
@@ -450,9 +437,12 @@ object_ptr get_number_object(std::istream& s)
 	
 	if(find_if(str.begin(), str.end(), char_finder()) != str.end())
 	{
+		if(str[0] == '0' &&  str.size() > 1 && str[1] != '.')
+			throw std::runtime_error("number cannot have leading zeroes: get_number_object");
 		return make_shared<double_object>(str_to_double(str));
 	}
-	
+	if(str[0] == '0' &&  str.size() > 1)
+		throw std::runtime_error("number cannot have leading zeroes: get_number_object");
 	return make_shared<int_object>(str_to_int(str));
 }
 
