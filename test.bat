@@ -1,0 +1,1 @@
+for /r test %%t in (*.json) do release\json.exe %%t

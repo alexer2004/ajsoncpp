@@ -78,6 +78,14 @@ struct unicode_decoder
 	}
 };
 
+struct char_finder
+{
+	bool operator()(char ch)
+	{
+		return ch == 'e' || ch == 'E' || ch == '.';
+	}
+};
+
 
 
 inline int str_to_int(const string&);
@@ -111,8 +119,8 @@ object_ptr get_empty_object(std::istream&);
 
 inline int str_to_int(const string& s)
 {
-#ifdef JSON_FAST_STR_CONVERSATION
-	return atoi(s.c_str);
+#ifdef JSON_FAST_STRING_TO_NUMBER
+	return atoi(s.c_str());
 #else
 	int val = 0;
 	std::stringstream stream;
@@ -125,8 +133,8 @@ inline int str_to_int(const string& s)
 
 inline double str_to_double(const string& s)
 {
-#ifdef JSON_FAST_STR_CONVERSATION
-	return atof(s.c_str);
+#ifdef JSON_FAST_STRING_TO_NUMBER
+	return atof(s.c_str());
 #else
 	double val = 0.0;
 	std::stringstream stream;
@@ -153,7 +161,15 @@ std::istream& operator>>(std::istream& s, root& r)
 		break;
 	default:
 		throw std::runtime_error("irregular token: operator>> wait for { or [");
-	}	
+	}
+
+	char ch = 0;
+	while(!s.get(ch) == false)
+	{
+		if(!std::isspace(ch, std::locale::classic()))
+			throw std::runtime_error("misplaced data");
+		ch = 0;
+	}
 	return s;
 }
 
@@ -199,7 +215,7 @@ const string get_string(std::istream& s)
 	str.reserve(80);
 	char ch = 0;
 	if(!s.get(ch))
-		throw std::runtime_error("bad stream: get_array_object");
+		throw std::runtime_error("bad stream: get_string");
 	while(ch != '"')
 	{
 		switch(ch)
@@ -207,6 +223,12 @@ const string get_string(std::istream& s)
 		case '\\':
 			str += get_escape_sequence(s);
 			break;
+		case '\f':
+		case '\n':
+		case '\r':
+		case '\t':
+		case '\b':
+			throw std::runtime_error("bad white-space: get_string");
 		default:
 			str += ch;
 		}
@@ -220,7 +242,7 @@ const string get_string(std::istream& s)
 const string get_escape_sequence(std::istream& s)
 {
 	string str;
-	str.reserve(1);
+	str.resize(1);
 	char ch = 0;
 	if(!s.get(ch))
 		throw std::runtime_error("bad stream: get_escape_sequence");
@@ -327,8 +349,13 @@ object_ptr get_map_object(std::istream& s)
 	ptr_map map;
 	string str;
 	char ch = 0;
-	if(!s.get(ch))
-		throw std::runtime_error("bad stream : get_map_object");
+	do
+	{
+		if(!s.get(ch))
+		{
+			throw std::runtime_error("bad stream : get_map_object");
+		}
+	} while(std::isspace(ch, std::locale::classic()));
 	if(ch != RFP)
 	{
 		s.putback(ch);
@@ -363,8 +390,13 @@ object_ptr get_array_object(std::istream& s)
 	ptr_array arr;
 	string str;
 	char ch = 0;
-	if(!s.get(ch))
-		throw std::runtime_error("bad stream: get_array_object");
+	do
+	{
+		if(!s.get(ch))
+		{
+			throw std::runtime_error("bad stream : get_array_object");
+		}
+	} while(std::isspace(ch, std::locale::classic()));
 	if(ch != RRP)
 	{
 		s.putback(ch);
@@ -393,6 +425,20 @@ object_ptr get_number_object(std::istream& s)
 	char ch = 0;
 	if(!s.get(ch))
 		throw std::runtime_error("bad stream: get_number_object");
+	if(ch == '0')
+	{
+		ch = 0;
+		if(!s.get(ch))
+			throw std::runtime_error("bad stream: get_number_object");
+		if(ch == '.')
+		{
+			str += '0';
+		}
+		else
+		{
+			throw std::runtime_error("number cannot have leading zeroes: get_number_object");
+		}
+	}
 	while(std::isdigit(ch, std::locale::classic()) || ch == 'e' || ch == 'E' || ch == '.' || ch == '-' || ch == '+')
 	{
 		str += ch;
@@ -401,10 +447,12 @@ object_ptr get_number_object(std::istream& s)
 			throw std::runtime_error("bad stream: get_number_object");
 	}
 	s.putback(ch);
-	if(str.find_first_of('.') != string::npos)
+	
+	if(find_if(str.begin(), str.end(), char_finder()) != str.end())
 	{
 		return make_shared<double_object>(str_to_double(str));
 	}
+	
 	return make_shared<int_object>(str_to_int(str));
 }
 
