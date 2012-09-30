@@ -12,7 +12,7 @@ namespace json{
 
 std::istream& operator>>(std::istream&, root&);
 
-const root read(const string&);
+root read(const string&);
 
 }
 

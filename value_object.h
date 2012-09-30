@@ -38,7 +38,7 @@ public:
 		return const_cast<value_type&>(static_cast<const value_object&>(*this).value());
 	}
 
-	const value_type value()const
+	const value_type& value()const
 	{
 		return val;
 	}

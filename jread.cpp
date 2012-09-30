@@ -5,20 +5,26 @@
 #include "type_ptr.h"
 #include <sstream>
 #include <algorithm>
-#ifdef JSON_FAST_STR_CONVERSATION
+#ifdef JSON_FAST_STRING_TO_NUMBER
 #include <stdio.h>
 #endif
 
 
-#ifdef BOOST_SHARED_PTR
+#if defined(JSON_BOOST_SHARED_PTR)
 #include "boost/make_shared.hpp" 
 namespace json{
 	using namespace boost;
 }
 	
-#else
+#elif defined(JSON_TR1_SHARED_PTR)
 namespace json{
 	using namespace std::tr1;
+}
+#else
+namespace json{
+	using namespace std;
+}
+
 }
 #endif
 
@@ -95,13 +101,12 @@ inline double str_to_double(const string&);
 token_value get_token(std::istream&); 
 
 
-const string get_string(std::istream&);
-
-const string get_escape_sequence(std::istream&);
+string get_string(std::istream&);
+string get_escape_sequence(std::istream&);
 
 unsigned int get_unicode_code_point(std::istream&);
 
-const string code_point_to_utf8(unsigned int);
+string code_point_to_utf8(unsigned int);
 
 object_ptr get_object(std::istream&, token_value);
 
@@ -173,7 +178,7 @@ std::istream& operator>>(std::istream& s, root& r)
 	return s;
 }
 
-const root read(const string&)
+root read(const string&)
 {
 	std::stringstream stream;
 	stream.imbue(std::locale::classic());
@@ -209,7 +214,7 @@ object_ptr get_object(std::istream& s, token_value t)
 	}
 }
 
-const string get_string(std::istream& s)
+string get_string(std::istream& s)
 {
 	string str;
 	str.reserve(80);
@@ -239,7 +244,7 @@ const string get_string(std::istream& s)
 	return str;
 }
 
-const string get_escape_sequence(std::istream& s)
+string get_escape_sequence(std::istream& s)
 {
 	string str;
 	str.resize(1);
@@ -310,7 +315,7 @@ unsigned int get_unicode_code_point(std::istream& s)
 	return code;
 }
 
-const string code_point_to_utf8(unsigned int code)
+string code_point_to_utf8(unsigned int code)
 {
 	std::string str;
 	if(code <= 0x7f) 
@@ -321,23 +326,24 @@ const string code_point_to_utf8(unsigned int code)
 	else if(code <= 0x7FF) 
 	{
 		str.resize(2);
-		str[1] = static_cast<char>(0x80 | (0x3f & code));
 		str[0] = static_cast<char>(0xC0 | (0x1f & (code >> 6)));
+		str[1] = static_cast<char>(0x80 | (0x3f & code));
+		
 	} 
 	else if(code <= 0xFFFF) 
 	{
 		str.resize(3);
-		str[2] = static_cast<char>(0x80 | (0x3f & code));
-		str[1] = static_cast<char>(0x80 | ((0x3f & (code >> 6))));
 		str[0] = static_cast<char>(0xE0 | ((0xf & (code >> 12))));
+		str[1] = static_cast<char>(0x80 | ((0x3f & (code >> 6))));
+		str[2] = static_cast<char>(0x80 | (0x3f & code));
 	}
 	else if(code <= 0x10FFFF) 
 	{
 		str.resize(4);
-		str[3] = static_cast<char>(0x80 | (0x3f & code));
-		str[2] = static_cast<char>(0x80 | (0x3f & (code >> 6)));
-		str[1] = static_cast<char>(0x80 | (0x3f & (code >> 12)));
 		str[0] = static_cast<char>(0xF0 | (0x7 & (code >> 18)));
+		str[1] = static_cast<char>(0x80 | (0x3f & (code >> 12)));
+		str[2] = static_cast<char>(0x80 | (0x3f & (code >> 6)));
+		str[3] = static_cast<char>(0x80 | (0x3f & code));
 	}
 	return str;
 }
@@ -435,7 +441,7 @@ object_ptr get_number_object(std::istream& s)
 	}
 	s.putback(ch);
 	
-	if(find_if(str.begin(), str.end(), char_finder()) != str.end())
+	if(std::find_if(str.begin(), str.end(), char_finder()) != str.end())
 	{
 		if(str[0] == '0' &&  str.size() > 1 && str[1] != '.')
 			throw std::runtime_error("number cannot have leading zeroes: get_number_object");
@@ -449,7 +455,27 @@ object_ptr get_number_object(std::istream& s)
 object_ptr get_boolean_object(std::istream& s)
 {
 	bool b;
-	s >> std::boolalpha >> b;
+	string str;
+	s >> std::setw(4) >> str >> std::setw(0);
+	
+	if(str == "true")
+	{
+		b = true;
+	}
+	else if(str == "fals")
+	{
+		char ch = 0;
+		if(!s.get(ch))
+			throw std::runtime_error("bad stream: get_number_object");
+		if(ch == 'e')
+		{
+			b = false;
+		}
+		else
+			throw std::runtime_error("error boolean value: get_boolean_object");
+	}
+	else
+	    throw std::runtime_error("error boolean value: get_boolean_object");
 	return make_shared<bool_object>(b);
 }
 

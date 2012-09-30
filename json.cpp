@@ -2,6 +2,7 @@
 //
 #include "object_visitor.h"
 #include "jread.h"
+#include "jwrite.h"
 #include <fstream>
 #include <iostream>
 
@@ -15,7 +16,8 @@ int main(int argc, char* argv[])
 			json::root root;
 			std::fstream file1(argv[1], std::ios_base::in);
 			file1 >> root;
-			std::cout  << "Ok!" << std::endl;
+			std::cout << "Ok!" << std::endl;
+			std::cout << root;
 		}
 		catch(const std::exception& e)
 		{

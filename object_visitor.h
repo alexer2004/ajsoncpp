@@ -5,32 +5,45 @@
 #include <string>
 #include <deque>
 
-#ifdef BOOST_SHARED_PTR
+#if defined(JSON_BOOST_SHARED_PTR)
 	#include "boost/shared_ptr.hpp"
 	namespace json{
 		typedef boost::shared_ptr<object> object_ptr;
 	}
-#else
+#elif defined(JSON_TR1_SHARED_PTR) 
 	#include <memory>
 	namespace json{
 		typedef std::tr1::shared_ptr<object> object_ptr;
 	}
+#else
+	#include <memory>
+	namespace json{
+		typedef std::shared_ptr<object> object_ptr;
+	}
+	
 
 #endif
 
 
-#ifdef BOOST_UNODERED_MAP
+#if defined(JSON_BOOST_UNORDERED_MAP)
         #include "boost/unordered_map.hpp"
 	namespace json{
 		typedef std::string string;			    //utf-8
 		typedef boost::unordered_map<string, object_ptr> ptr_map;
 	}
-#else
+#elif defined(JSON_TR1_UNORDERED_MAP)
 	#include <unordered_map>
 	namespace json{
 		typedef std::string string;				//utf-8
 		typedef std::tr1::unordered_map<string, object_ptr> ptr_map;
 	}
+#else
+	#include <unordered_map>
+	namespace json{
+		typedef std::string string;				//utf-8
+		typedef std::unordered_map<string, object_ptr> ptr_map;
+	}
+
 #endif
 
 

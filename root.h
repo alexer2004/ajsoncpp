@@ -30,6 +30,10 @@ public:
 	{
 		return val;
 	}
+	object_ptr& value()
+	{
+		return const_cast<object_ptr&>(static_cast<const root&>(*this).value());
+	}
 
 	void set_value(const object_ptr& v)
 	{
