@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& s, root& r)
 	return s;
 }
 
-const string read(root& r)
+string write(root& r)
 {
 	std::stringstream s;
 	s << r;

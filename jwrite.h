@@ -12,7 +12,7 @@ namespace json{
 
 std::ostream& operator<<(std::ostream&, root&);
 
-const string read(root&);
+string write(root&);
 
 }
 
