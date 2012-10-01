@@ -1,4 +1,4 @@
 JSON (JavaScript Object Notation) is a lightweight data-interchange format.
 It can represent value integer, real number, array of values and collection of key/value pairs.
 
-ajsoncpp (another JSON cpp library) is a APi to work with JSON value, control data's serialization.
+ajsoncpp (another JSON cpp library) is a APi to work with JSON value, control serialization of the data.
