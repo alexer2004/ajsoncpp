@@ -20,8 +20,6 @@
 	namespace json{
 		typedef std::shared_ptr<object> object_ptr;
 	}
-	
-
 #endif
 
 

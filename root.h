@@ -2,6 +2,16 @@
 #define JSON_ROOT_H
 
 #include "object_visitor.h"
+#include <istream>
+#include "map_getter.h"
+
+#include "jshared_ptr.h"
+#include "map_visitor.h"
+
+#include "array_getter.h"
+#include "array_visitor.h"
+
+
 
 namespace json{
 
@@ -26,20 +36,47 @@ public:
 		val = r.val;
 	}
 	
-	const object_ptr& value()const
+	template<typename V> void accept(V& v)
 	{
-		return val;
-	}
-	object_ptr& value()
-	{
-		return const_cast<object_ptr&>(static_cast<const root&>(*this).value());
+		val->accept(v);
 	}
 
-	void set_value(const object_ptr& v)
+	void create_map()
 	{
-		val = v;
+		val = make_shared<ptr_map_object>();
+	}
+
+	void create_array()
+	{
+		val = make_shared<ptr_array_object>();
+	}
+
+	map_getter map()
+	{
+		map_visitor visitor;
+		val->accept(visitor);
+		return visitor.value();
+	}
+
+	const map_getter map()const
+	{
+		return static_cast<const root&>(*this).map();
+	}
+
+	array_getter array()
+	{
+		array_visitor visitor;
+		val->accept(visitor);
+		return visitor.value();
+	}
+
+	const array_getter array()const
+	{
+		return static_cast<const root&>(*this).array();
 	}
 	
+
+	friend std::istream& operator>>(std::istream& s, root& r);
 private:
 	object_ptr val;
 };

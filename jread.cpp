@@ -5,28 +5,13 @@
 #include "type_ptr.h"
 #include <sstream>
 #include <algorithm>
+#include "jshared_ptr.h"
 #ifdef JSON_FAST_STRING_TO_NUMBER
 #include <stdio.h>
 #endif
 
 
-#if defined(JSON_BOOST_SHARED_PTR)
-#include "boost/make_shared.hpp" 
-namespace json{
-	using namespace boost;
-}
-	
-#elif defined(JSON_TR1_SHARED_PTR)
-namespace json{
-	using namespace std::tr1;
-}
-#else
-namespace json{
-	using namespace std;
-}
 
-}
-#endif
 
 namespace json{
 
@@ -162,7 +147,7 @@ std::istream& operator>>(std::istream& s, root& r)
 	{
 	case OBJECT_MAP:
 	case OBJECT_ARRAY:
-		r.set_value(get_object(s, t));
+		r.val = get_object(s, t);
 		break;
 	default:
 		throw std::runtime_error("irregular token: operator>> wait for { or [");

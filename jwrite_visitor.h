@@ -2,7 +2,6 @@
 #define JSON_WRITE_VISITOR_H
 
 #include "object_visitor.h"
-#include "value_object.h"
 #include "root.h"
 #include <ostream>
 #include <functional>

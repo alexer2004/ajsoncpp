@@ -7,7 +7,7 @@ namespace json{
 
 std::ostream& operator<<(std::ostream& s, root& r)
 {
-	r.value()->accept(jwrite_visitor(s));
+	r.accept(jwrite_visitor(s));
 	return s;
 }
 
