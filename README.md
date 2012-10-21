@@ -12,7 +12,6 @@ Parsing JSON
 
 
 This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
-
 '''javascript
 {
     "firstName": "John",
@@ -39,30 +38,30 @@ This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
 
 To parse such data format with jsoncpp you build object tree:
 
-'''cpp
+'''c
     json::root root = json::read(json_string);
 '''
 Now you can get value from tree. 
 
-'''cpp
+'''c
 	int age = root.map()->integer("age");
 '''
 
 You can change value of tree's element.
 
-'''cpp
+'''c
 	root.map()->str("firstName") = "Alexandr";
 '''
 
 Delete "phononumber". We have no phones.:)
 
-'''cpp
+'''c
 	root.map()->erase("phoneNumber");
 '''
 
 If we try to retrieve data's type, which doesn't exist, ajsoncpp throw exception.
 For example:
-'''cpp
+'''c
 	json::string age = root.map()->string("age"); //throw exception std::runtime_error	
 '''
 
@@ -72,7 +71,7 @@ Parsing streams
 =================
 
 You can parse files with JSON data to receive whole objects tree.
-'''cpp
+'''c
         std::fstream istream("sample.json");
 	json::root root; 
 	istream >> root;
@@ -91,7 +90,7 @@ traverse objects tree.
 For example i want to get whole phone numbers.
 
 
-'''cpp
+'''c
 
 class phonenumber_visitor : public object_visitor
 {
@@ -156,7 +155,7 @@ Creating JSON data
 
 Create objects tree in code.
 
-'''cpp
+'''c
 	json::root r;
 	r.create_map();
 	json::map_getter::map_getter_ptr map = r.map();
@@ -179,7 +178,7 @@ I fill array with int, double and string data. At the end i get such JSON data:
 ajsoncpp data structures
 =========================
 
-'''cpp
+'''c
 
 class object_visitor;
 
