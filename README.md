@@ -12,7 +12,7 @@ Parsing JSON
 
 
 This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
-'''javascript
+<code>
 {
     "firstName": "John",
     "lastName": "Smith",
@@ -34,36 +34,36 @@ This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
         }
     ]
 }
-'''
+</code>
 
 To parse such data format with jsoncpp you build object tree:
 
-'''c
+<code>
     json::root root = json::read(json_string);
-'''
+</code>
 Now you can get value from tree. 
 
-'''c
+<code>
 	int age = root.map()->integer("age");
-'''
+</code>
 
 You can change value of tree's element.
 
-'''c
+<code>
 	root.map()->str("firstName") = "Alexandr";
-'''
+</code>
 
 Delete "phononumber". We have no phones.:)
 
-'''c
+<code>
 	root.map()->erase("phoneNumber");
-'''
+</code>
 
 If we try to retrieve data's type, which doesn't exist, ajsoncpp throw exception.
 For example:
-'''c
+<code>
 	json::string age = root.map()->string("age"); //throw exception std::runtime_error	
-'''
+</code>
 
 When we escape from scope, root delete all objects in tree.
 
@@ -71,7 +71,7 @@ Parsing streams
 =================
 
 You can parse files with JSON data to receive whole objects tree.
-'''c
+<code>
         std::fstream istream("sample.json");
 	json::root root; 
 	istream >> root;
@@ -79,7 +79,7 @@ You can parse files with JSON data to receive whole objects tree.
 	std::stream ostream("out.json");
 	ostream << root; 
 
-'''
+</code>
 
 
 Filtering JSON data
@@ -90,7 +90,7 @@ traverse objects tree.
 For example i want to get whole phone numbers.
 
 
-'''c
+<code>
 
 class phonenumber_visitor : public object_visitor
 {
@@ -148,14 +148,14 @@ public:
 
 
 
-'''
+</code>
 
 Creating JSON data
 ====================
 
 Create objects tree in code.
 
-'''c
+<code>
 	json::root r;
 	r.create_map();
 	json::map_getter::map_getter_ptr map = r.map();
@@ -167,18 +167,18 @@ Create objects tree in code.
 	array->push_back(2.0);
 	array->push_back(json::string("three"));
 	std::cout << r;
-'''
+</code>
 I create map object and insert in it int, double and array data.
 I fill array with int, double and string data. At the end i get such JSON data:
 
-'''javascript
+<code>javascript
 	{"array":[1,2,"three"],"double":10,"integer":12}
-''''
+<code>'
 
 ajsoncpp data structures
 =========================
 
-'''c
+<code>
 
 class object_visitor;
 
@@ -263,7 +263,7 @@ public:
 };
 
 
-'''
+</code>
 
 
 
