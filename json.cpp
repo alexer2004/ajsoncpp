@@ -1,5 +1,3 @@
-// json.cpp: определяет точку входа для консольного приложения.
-//
 #include "object_visitor.h"
 #include "jread.h"
 #include "jwrite.h"
@@ -27,13 +25,16 @@ int main(int argc, char* argv[])
 	}
 	json::root r;
 	r.create_map();
-	r.map().insert("integer", 10);
-	r.map().insert("double", 10.0);
-	r.map().integer("integer") = 12;
-	r.map().insert("array", json::ptr_array());
-	r.map().array("array")->push_back(1);
-	r.map().array("array")->push_back(2.0);
-	r.map().array("array")->push_back(json::string("three"));
+	json::map_getter::map_getter_ptr map = r.map();
+	map->insert("integer", 10);
+	map->insert("double", 10.0);
+	map->integer("integer") = 12;
+	//map.insert("array", json::ptr_array());
+	map->insert_array("array");
+	json::array_getter::array_getter_ptr array = map->array("array");
+	array->push_back(1);
+	array->push_back(2.0);
+	array->push_back(json::string("three"));
 	std::cout << r;
 	return 0;
 }

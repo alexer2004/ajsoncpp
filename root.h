@@ -19,6 +19,16 @@ namespace json{
 class root
 {
 public:
+	#if defined(JSON_BOOST_SHARED_PTR)
+	typedef boost::shared_ptr<map_getter> map_getter_ptr;
+	typedef boost::shared_ptr<array_getter> array_getter_ptr;
+#elif defined(JSON_TR1_SHARED_PTR) 
+	typedef std::tr1::shared_ptr<map_getter> map_getter_ptr;
+	typedef std::tr1::shared_ptr<array_getter> array_getter_ptr;
+#else
+	typedef std::shared_ptr<map_getter> map_getter_ptr;
+	typedef std::shared_ptrr<array_getter> array_getter_ptr;
+#endif
 	root()
 	{
 	}
@@ -51,26 +61,26 @@ public:
 		val = make_shared<ptr_array_object>();
 	}
 
-	map_getter map()
+	map_getter_ptr map()
 	{
 		map_visitor visitor;
 		val->accept(visitor);
-		return visitor.value();
+		return make_shared<map_getter>(visitor.value());
 	}
 
-	const map_getter map()const
+	const map_getter_ptr map()const
 	{
 		return static_cast<const root&>(*this).map();
 	}
 
-	array_getter array()
+	array_getter_ptr array()
 	{
 		array_visitor visitor;
 		val->accept(visitor);
-		return visitor.value();
+		return make_shared<array_getter>(visitor.value());
 	}
 
-	const array_getter array()const
+	const array_getter_ptr array()const
 	{
 		return static_cast<const root&>(*this).array();
 	}

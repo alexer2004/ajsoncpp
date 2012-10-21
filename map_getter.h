@@ -125,6 +125,18 @@ public:
 	{
 		return pval->insert(std::make_pair(key, make_shared<null_object>())).second;
 	}
+
+	bool insert_array(const string& key)
+	{
+		return pval->insert(std::make_pair(key, make_shared<ptr_array_object>())).second;
+	}
+
+	bool insert_map(const string& key)
+	{
+		return pval->insert(std::make_pair(key, make_shared<ptr_map_object>())).second;
+	}
+
+
 	size_t erase(const string& key)
 	{
 		return pval->erase(key);

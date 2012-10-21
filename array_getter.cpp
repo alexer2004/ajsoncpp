@@ -17,9 +17,9 @@ const array_getter::map_getter_ptr array_getter::map(size_t i)const
 
 
 
-array_getter::array_getter_ptr array_getter::array(size_t)
+array_getter::array_getter_ptr array_getter::array(size_t i)
 {
-	return static_cast<const map_getter&>(*this).array(key);
+	return static_cast<const array_getter&>(*this).array(i);
 }
 	
 const array_getter::array_getter_ptr array_getter::array(size_t i)const

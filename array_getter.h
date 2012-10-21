@@ -115,11 +115,19 @@ public:
 
 	template<typename V> void push_back(V value)
 	{
-		return pval->push_back(make_shared<value_object<V> >(value));
+		pval->push_back(make_shared<value_object<V> >(value));
 	}
 	void push_back(null_object)
 	{
-		return pval->push_back( make_shared<null_object>());
+		pval->push_back(make_shared<null_object>());
+	}
+	void push_back_array()
+	{
+		pval->push_back(make_shared<ptr_array_object>());
+	}
+	void push_back_map()
+	{
+		pval->push_back(make_shared<ptr_map_object>());
 	}
 	void erase(size_t i)
 	{
