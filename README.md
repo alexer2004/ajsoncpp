@@ -13,6 +13,7 @@ Parsing JSON
 
 This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
 <code>
+
     {
     "firstName": "John",
     "lastName": "Smith",
@@ -32,37 +33,48 @@ This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
             "type": "fax",
             "number": "646 555-4567"
         }
-    ]
+        ]
     }
+
 </code>
 
 To parse such data format with jsoncpp you build object tree:
 
 <code>
+
     json::root root = json::read(json_string);
+
 </code>
 Now you can get value from tree. 
 
 <code>
+
     int age = root.map()->integer("age");
+
 </code>
 
 You can change value of tree's element.
 
 <code>
+
     root.map()->str("firstName") = "Alexandr";
+
 </code>
 
 Delete "phononumber". We have no phones.:)
 
 <code>
+
     root.map()->erase("phoneNumber");
+
 </code>
 
 If we try to retrieve data's type, which doesn't exist, ajsoncpp throw exception.
 For example:
 <code>
+
     json::string age = root.map()->string("age"); //throw exception std::runtime_error	
+
 </code>
 
 When we escape from scope, root delete all objects in tree.
@@ -72,12 +84,14 @@ Parsing streams
 
 You can parse files with JSON data to receive whole objects tree.
 <code>
+
     std::fstream istream("sample.json");
     json::root root; 
     istream >> root;
     //do something
     std::stream ostream("out.json");
     ostream << root; 
+
 </code>
 
 
@@ -90,6 +104,7 @@ For example i want to get whole phone numbers.
 
 
 <code>
+
     class phonenumber_visitor : public object_visitor
     {
     public:
@@ -153,6 +168,7 @@ Creating JSON data
 Create objects tree in code.
 
 <code>
+
     json::root r;
     r.create_map();
     json::map_getter::map_getter_ptr map = r.map();
@@ -164,13 +180,14 @@ Create objects tree in code.
     array->push_back(2.0);
     array->push_back(json::string("three"));
     std::cout << r;
+
 </code>
 I create map object and insert in it int, double and array data.
 I fill array with int, double and string data. At the end i get such JSON data:
 
-<code>javascript
-	{"array":[1,2,"three"],"double":10,"integer":12}
-<code>'
+<code>
+    {"array":[1,2,"three"],"double":10,"integer":12}
+<code>
 
 ajsoncpp data structures
 =========================
