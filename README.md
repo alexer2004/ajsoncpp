@@ -13,7 +13,7 @@ Parsing JSON
 
 This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
 <code>
-{
+    {
     "firstName": "John",
     "lastName": "Smith",
     "age": 25,
@@ -33,7 +33,7 @@ This is JSON data from wikipedia page(http://en.wikipedia.org/wiki/JSON)
             "number": "646 555-4567"
         }
     ]
-}
+    }
 </code>
 
 To parse such data format with jsoncpp you build object tree:
@@ -44,25 +44,25 @@ To parse such data format with jsoncpp you build object tree:
 Now you can get value from tree. 
 
 <code>
-	int age = root.map()->integer("age");
+    int age = root.map()->integer("age");
 </code>
 
 You can change value of tree's element.
 
 <code>
-	root.map()->str("firstName") = "Alexandr";
+    root.map()->str("firstName") = "Alexandr";
 </code>
 
 Delete "phononumber". We have no phones.:)
 
 <code>
-	root.map()->erase("phoneNumber");
+    root.map()->erase("phoneNumber");
 </code>
 
 If we try to retrieve data's type, which doesn't exist, ajsoncpp throw exception.
 For example:
 <code>
-	json::string age = root.map()->string("age"); //throw exception std::runtime_error	
+    json::string age = root.map()->string("age"); //throw exception std::runtime_error	
 </code>
 
 When we escape from scope, root delete all objects in tree.
@@ -72,13 +72,12 @@ Parsing streams
 
 You can parse files with JSON data to receive whole objects tree.
 <code>
-        std::fstream istream("sample.json");
-	json::root root; 
-	istream >> root;
-	//do something
-	std::stream ostream("out.json");
-	ostream << root; 
-
+    std::fstream istream("sample.json");
+    json::root root; 
+    istream >> root;
+    //do something
+    std::stream ostream("out.json");
+    ostream << root; 
 </code>
 
 
@@ -91,22 +90,20 @@ For example i want to get whole phone numbers.
 
 
 <code>
-
-class phonenumber_visitor : public object_visitor
-{
-public:
-	void visit(null_object& v)
-	{
+    class phonenumber_visitor : public object_visitor
+    {
+    public:
+        void visit(null_object& v)
+        {
 	}
-	
-	void visit(bool_object& v)
-	{
+        void visit(bool_object& v)
+        {
+        }
+        void visit(string_object& v)
+        {
+            value.push_back(v.value());	
 	}
-	void visit(string_object& v)
-	{
-		value.push_back(v.value());	
-	}
-	void visit(int_object& v);
+        void visit(int_object& v);
 	{
 	
 	}
@@ -139,12 +136,12 @@ public:
 	~phonenumber_visitor(){;}
 	typedef std::vector<string> strings;
 	strings value;
-};
+    };
 
-	json::root root = json::read(json_string);
-	phonenumber_visitor visitor;
-	root.accept(visitor);
-	//do somthing with visitor.value -- whole phones
+    json::root root = json::read(json_string);
+    phonenumber_visitor visitor;
+    root.accept(visitor);
+    //do somthing with visitor.value -- whole phones
 
 
 
@@ -156,17 +153,17 @@ Creating JSON data
 Create objects tree in code.
 
 <code>
-	json::root r;
-	r.create_map();
-	json::map_getter::map_getter_ptr map = r.map();
-	map->insert("integer", 10);
-	map->insert("double", 10.0);
-	map->insert_array("array");
-	json::array_getter::array_getter_ptr array = map->array("array");
-	array->push_back(1);
-	array->push_back(2.0);
-	array->push_back(json::string("three"));
-	std::cout << r;
+    json::root r;
+    r.create_map();
+    json::map_getter::map_getter_ptr map = r.map();
+    map->insert("integer", 10);
+    map->insert("double", 10.0);
+    map->insert_array("array");
+    json::array_getter::array_getter_ptr array = map->array("array");
+    array->push_back(1);
+    array->push_back(2.0);
+    array->push_back(json::string("three"));
+    std::cout << r;
 </code>
 I create map object and insert in it int, double and array data.
 I fill array with int, double and string data. At the end i get such JSON data:
@@ -180,19 +177,19 @@ ajsoncpp data structures
 
 <code>
 
-class object_visitor;
+    class object_visitor;
 
-class object
-{
-public:
+    class object
+    {
+    public:
 	virtual void accept(object_visitor&)=0;
 	virtual ~object()=0{;}
 
-};
+    };
 
-template<class T> class value_object : public object
-{
-public:
+    template<class T> class value_object : public object
+    {
+    public:
 	typedef T value_type;
 	value_object()
 	{
@@ -234,23 +231,22 @@ public:
 	{
 		v.visit(*this);		
 	}
-
-private:
+    private:
 	value_type val;
 
-};
+    };
 
-typedef value_object<bool> bool_object;
-typedef value_object<string> string_object;
-typedef value_object<int> int_object;
-typedef value_object<double> double_object;
-typedef value_object<ptr_map> ptr_map_object;
-typedef std::deque<object_ptr> ptr_array;
-typedef value_object<ptr_array> ptr_array_object;
+    typedef value_object<bool> bool_object;
+    typedef value_object<string> string_object;
+    typedef value_object<int> int_object;
+    typedef value_object<double> double_object;
+    typedef value_object<ptr_map> ptr_map_object;
+    typedef std::deque<object_ptr> ptr_array;
+    typedef value_object<ptr_array> ptr_array_object;
 
-class object_visitor
-{
-public:
+    class object_visitor
+    {
+    public:
 	virtual void visit(null_object&)=0;
 	virtual void visit(bool_object&)=0;
 	virtual void visit(string_object&)=0;
@@ -260,7 +256,7 @@ public:
 	virtual void visit(ptr_array_object&)=0;
 	virtual ~object_visitor()=0{;}
 
-};
+    };
 
 
 </code>
