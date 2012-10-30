@@ -67,9 +67,13 @@ public:
 	virtual void visit(double_object&)=0;
 	virtual void visit(ptr_map_object&)=0;
 	virtual void visit(ptr_array_object&)=0;
-	virtual ~object_visitor()=0{;}
+	virtual ~object_visitor()=0;
 
 };
+
+inline object_visitor::~object_visitor()
+{
+}
 
 
 
