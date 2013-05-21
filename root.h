@@ -27,7 +27,7 @@ public:
 	typedef std::tr1::shared_ptr<array_getter> array_getter_ptr;
 #else
 	typedef std::shared_ptr<map_getter> map_getter_ptr;
-	typedef std::shared_ptrr<array_getter> array_getter_ptr;
+	typedef std::shared_ptr<array_getter> array_getter_ptr;
 #endif
 	root()
 	{

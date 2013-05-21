@@ -33,7 +33,7 @@ public:
 	typedef std::tr1::shared_ptr<array_getter> array_getter_ptr;
 #else
 	typedef std::shared_ptr<map_getter> map_getter_ptr;
-	typedef std::shared_ptrr<array_getter> array_getter_ptr;
+	typedef std::shared_ptr<array_getter> array_getter_ptr;
 #endif
 	array_getter()
 		:pval(0)
@@ -115,7 +115,7 @@ public:
 
 	template<typename V> void push_back(V value)
 	{
-		pval->push_back(make_shared<value_object<V> >(value));
+		pval->push_back(make_shared<value_object<V> >(std::move(value)));
 	}
 	void push_back(null_object)
 	{

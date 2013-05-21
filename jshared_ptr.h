@@ -17,7 +17,6 @@ namespace json{
 	using namespace std;
 }
 
-}
 #endif
 
 #endif

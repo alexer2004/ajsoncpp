@@ -42,7 +42,7 @@ public:
 	typedef std::tr1::shared_ptr<array_getter> array_getter_ptr;
 #else
 	typedef std::shared_ptr<map_getter> map_getter_ptr;
-	typedef std::shared_ptrr<array_getter> array_getter_ptr;
+	typedef std::shared_ptr<array_getter> array_getter_ptr;
 #endif
 	typedef std::deque<string> keys;
 	map_getter()
@@ -119,7 +119,7 @@ public:
 
 	template<typename V> bool insert(const string& key, V value)
 	{
-		return pval->insert(std::make_pair(key, make_shared<value_object<V> >(value))).second;
+		return pval->insert(std::make_pair(key, make_shared<value_object<V> >(std::move(value)))).second;
 	}
 	bool insert(const string& key, null_object)
 	{

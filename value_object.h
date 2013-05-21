@@ -23,7 +23,8 @@ public:
 		:val(v.val)
 	{
 	} 
-	
+
+#ifdef JSON_TR1_SHARED_PTR
 	value_object<T>& operator=(const value_object<T>& v)
 	{
 		if(this != &v)
@@ -32,6 +33,35 @@ public:
 		}
 		return *this;
 	}
+#else 
+	value_object(value_object<T>&& o)
+		:val(move(o.val))
+	{
+		
+	}
+
+	value_object(value_type&& v)
+		:val(move(v))
+	{
+
+	}
+
+	value_object<T>& operator=(const value_object<T> v)
+	{
+		v.swap(*this);		
+		return *this;
+	}
+
+
+	void swap(value_object<T>& o)
+	{
+		swap(val, o.val);
+	}
+
+#endif // !JSON_TR1_SHARED_PTR
+
+
+	
 	~value_object(){;}	
 	value_type& value()
 	{
