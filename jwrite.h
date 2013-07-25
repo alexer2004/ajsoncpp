@@ -8,15 +8,9 @@
 
 namespace json{
 
+	std::ostream& operator<<(std::ostream&, root&);
 
-
-std::ostream& operator<<(std::ostream&, root&);
-
-string write(root&);
+	string write(root&);
 
 }
-
-
-
-
 #endif

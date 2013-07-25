@@ -8,15 +8,9 @@
 
 namespace json{
 
-
-
 std::istream& operator>>(std::istream&, root&);
 
 root read(const string&);
 
 }
-
-
-
-
 #endif

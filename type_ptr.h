@@ -35,15 +35,5 @@ namespace json{
 	typedef std::shared_ptr<bool_object> bool_ptr;
 	typedef std::shared_ptr<null_object> null_ptr;
 #endif
-
-
-
-
-
-
 }
-
-
-
-
 #endif

@@ -4,14 +4,8 @@
 
 namespace json{
 
-
-void null_object::accept(object_visitor& v)
-{
-	v.visit(*this);
-}
-
-
-
-
-
+	void null_object::accept(object_visitor& v)
+	{
+		v.visit(*this);
+	}
 }

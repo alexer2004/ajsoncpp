@@ -4,26 +4,18 @@
 
 namespace json{
 
-class object_visitor;
+	class object_visitor;
 
-class object
-{
-public:
-	virtual void accept(object_visitor&)=0;
-	virtual ~object()=0;
+	class object
+	{
+	public:
+		virtual void accept(object_visitor&)=0;
+		virtual ~object()=0;
 
-};
+	};
 
-inline object::~object()
-{
+	inline object::~object()
+	{
+	}
 }
-
-
-
-
-
-}
-
-
-
 #endif

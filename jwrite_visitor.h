@@ -9,25 +9,20 @@
 
 
 #if defined(JSON_BOOST_REF)
-      #include "boost/ref.hpp"
-	namespace json{
-		typedef boost::reference_wrapper<std::ostream> ref_ostream;
-		//typedef std::ptr_fun<ref_ostream, std::ostream> ref;
-	}
+#include "boost/ref.hpp"
+namespace json{
+	typedef boost::reference_wrapper<std::ostream> ref_ostream;
+}
 #elif defined(JSON_TR1_REF)
-	#include <functional>
-	namespace json{
-		typedef std::tr1::reference_wrapper<std::ostream> ref_ostream;
-		//typedef std::ptr_fun<std::tr1::ref> ref;
-	}
+#include <functional>
+namespace json{
+	typedef std::tr1::reference_wrapper<std::ostream> ref_ostream;
+}
 #else
-	#include <functional>
-	namespace json{
-		typedef std::reference_wrapper<std::ostream> ref_ostream;
-		//typedef std::ptr_fun<std::ref> ref;
-		//std::ref<std::ostream> ref;
-	}
-
+#include <functional>
+namespace json{
+	typedef std::reference_wrapper<std::ostream> ref_ostream;
+}
 #endif
 
 
@@ -35,33 +30,26 @@
 namespace json{
 
 
-class jwrite_visitor : public object_visitor
-{
-public:
-	jwrite_visitor(std::ostream& s)
-		:stream(s)
+	class jwrite_visitor : public object_visitor
 	{
-		s.imbue(std::locale::classic());
-	}
+	public:
+		jwrite_visitor(std::ostream& s)
+			:stream(s)
+		{
+			s.imbue(std::locale::classic());
+		}
 
-	void visit(null_object&);
-	void visit(bool_object&);
-	void visit(string_object&);
-	void visit(int_object&);
-	void visit(double_object&);
-	void visit(ptr_map_object&);
-	void visit(ptr_array_object&);
-	~jwrite_visitor(){;}
-private:
-	ref_ostream stream;
-};
-
-
-
-
-
-
+		void visit(null_object&);
+		void visit(bool_object&);
+		void visit(string_object&);
+		void visit(int_object&);
+		void visit(double_object&);
+		void visit(ptr_map_object&);
+		void visit(ptr_array_object&);
+		~jwrite_visitor(){;}
+	private:
+		ref_ostream stream;
+	};
 }
-
 
 #endif

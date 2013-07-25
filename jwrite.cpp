@@ -17,7 +17,4 @@ string write(root& r)
 	s << r;
 	return s.str();
 }
-
-
-
 }

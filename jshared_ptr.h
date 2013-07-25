@@ -7,7 +7,7 @@
 namespace json{
 	using namespace boost;
 }
-	
+
 #elif defined(JSON_TR1_SHARED_PTR)
 namespace json{
 	using namespace std::tr1;

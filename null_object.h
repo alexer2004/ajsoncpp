@@ -7,25 +7,11 @@
 namespace json{
 
 
-class null_object : public object
-{
-public:
-	void accept(object_visitor&);
-	~null_object(){;}
-
-};
-
-
-
-
-
-
-
+	class null_object : public object
+	{
+	public:
+		void accept(object_visitor&);
+		~null_object(){;}
+	};
 }
-
-
-
-
-
-
 #endif
