@@ -1,1 +1,1 @@
-for /r json_test %%t in (*.json) do release\json.exe %%t
+for /r json_test %%t in (*.json) do release\ajsoncpp.exe %%t

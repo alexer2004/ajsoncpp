@@ -4,7 +4,7 @@
 
 
 
-namespace json{
+namespace json {
 
 	size_t length(const string&, size_t);
 
@@ -17,9 +17,9 @@ namespace json{
 	inline void write_string(std::ostream& stream, const string& s)
 	{
 		stream << '\"';
-		for(size_t i=0;  i<s.size();)
+		for (size_t i = 0; i < s.size();)
 		{
-			switch(s[i])
+			switch (s[i])
 			{
 			case '\"':
 				stream << "\\\"";
@@ -69,19 +69,19 @@ namespace json{
 	inline size_t length(const string& s, size_t i)
 	{
 		unsigned char ch = convert(s[i]);
-		if(ch < 128)
+		if (ch < 128)
 		{
 			return 1;
 		}
-		else if((ch >> 5) == 6)
+		else if ((ch >> 5) == 6)
 		{
 			return 2;
 		}
-		else if((ch >> 4) == 14)
+		else if ((ch >> 4) == 14)
 		{
 			return 3;
 		}
-		else if((ch >> 3) == 30)
+		else if ((ch >> 3) == 30)
 		{
 			return 4;
 		}
@@ -94,7 +94,7 @@ namespace json{
 	{
 		unsigned int cp = convert(s[i]);
 		size_t n = length(s, i);
-		switch(n)
+		switch (n)
 		{
 		case 1:
 			break;
@@ -110,11 +110,11 @@ namespace json{
 			break;
 		}
 
-		if(cp < 128)
+		if (cp < 128)
 		{
 			stream << static_cast<char>(cp);
 		}
-		else if(cp > 0xffff)
+		else if (cp > 0xffff)
 		{
 			unsigned int c = (cp >> 10) + (0xd800 - (0x10000 >> 10));
 			stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c << std::setfill(' ') << std::setw(0);
@@ -150,22 +150,22 @@ namespace json{
 	}
 
 	void jwrite_visitor::visit(double_object& v)
-	{ 
+	{
 		stream.get() << v.value();
 	}
 
 	void jwrite_visitor::visit(ptr_map_object& v)
 	{
 		stream.get() << '{';
-		for(ptr_map_object::value_type::iterator it = v.value().begin(); it != v.value().end(); ++it)
+		for (auto it = cbegin(v.value()); it != cend(v.value()); ++it)
 		{
 			write_string(stream.get(), it->first);
 			string str = it->first;
 			stream.get() << ':';
 			it->second->accept(*this);
-			ptr_map_object::value_type::iterator i = it;
+			auto i = it;
 			++i;
-			if(i != v.value().end())
+			if (i != cend(v.value()))
 			{
 				stream.get() << ',';
 			}
@@ -176,10 +176,10 @@ namespace json{
 	void jwrite_visitor::visit(ptr_array_object& v)
 	{
 		stream.get() << '[';
-		for(ptr_array_object::value_type::iterator it = v.value().begin(); it != v.value().end(); ++it)
+		for (auto it = cbegin(v.value()); it != cend(v.value()); ++it)
 		{
 			(*it)->accept(*this);
-			if(it + 1 != v.value().end())
+			if (it + 1 != cend(v.value()))
 			{
 				stream.get() << ',';
 			}

@@ -9,7 +9,7 @@
 #include "null_visitor.h"
 #include "jshared_ptr.h"
 
-namespace json{
+namespace json {
 
 	class map_getter;
 

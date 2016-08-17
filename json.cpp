@@ -11,11 +11,11 @@ int main(int argc, char* argv[])
 	{
 		try
 		{
-			/*json::root root;
+			json::root root;
 			std::fstream file1(argv[1], std::ios_base::in);
 			file1 >> root;
 			std::cout << "Ok!" << std::endl;
-			std::cout << root;*/
+			std::cout << root;
 		}
 		catch(const std::exception& e)
 		{
@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	json::root r;
+	/*json::root r;
 	r.create_map();
 	json::map_getter::map_getter_ptr map = r.map();
 	map->insert("integer", 10);
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	array->push_back(1);
 	array->push_back(2.0);
 	array->push_back(json::string("three"));
-	std::cout << r;
+	std::cout << r;*/
 	return 0;
 }
 
