@@ -3,7 +3,7 @@
 
 #include "null_object.h"
 #include <string>
-#include <deque>
+#include <vector>
 
 #if defined(JSON_BOOST_SHARED_PTR)
 #include "boost/shared_ptr.hpp"
@@ -54,7 +54,7 @@ namespace json{
 	typedef value_object<int> int_object;
 	typedef value_object<double> double_object;
 	typedef value_object<ptr_map> ptr_map_object;
-	typedef std::deque<object_ptr> ptr_array;
+	typedef std::vector<object_ptr> ptr_array;
 	typedef value_object<ptr_array> ptr_array_object;
 
 	class object_visitor

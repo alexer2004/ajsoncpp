@@ -10,7 +10,7 @@
 #include "null_visitor.h"
 #include "jshared_ptr.h"
 #include <memory>
-#include <deque>
+#include <vector>
 #include <algorithm>
 
 namespace json{
@@ -21,7 +21,7 @@ namespace json{
 	{
 		struct inserter
 		{
-			typedef std::deque<string> keys;
+			typedef std::vector<string> keys;
 			void operator()(const std::pair<const string, object_ptr>& p)
 			{
 				val.push_back(p.first);
@@ -44,7 +44,7 @@ namespace json{
 		typedef std::shared_ptr<map_getter> map_getter_ptr;
 		typedef std::shared_ptr<array_getter> array_getter_ptr;
 #endif
-		typedef std::deque<string> keys;
+		typedef std::vector<string> keys;
 		map_getter()
 		{
 		}
@@ -153,7 +153,7 @@ namespace json{
 
 		keys get_keys()const
 		{
-			return std::for_each(pval->begin(), pval->end(), inserter()).val;
+			return std::for_each(cbegin(*pval), std::cend(*pval), inserter()).val;
 		}
 
 	private:

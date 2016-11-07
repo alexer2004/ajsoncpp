@@ -127,7 +127,7 @@ namespace json {
 		}
 		void erase(size_t i)
 		{
-			pval->erase(pval->begin() + i);
+			pval->erase(std::begin(*pval) + i);
 		}
 
 		void clear()

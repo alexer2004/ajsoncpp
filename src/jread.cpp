@@ -11,7 +11,7 @@
 #endif
 
 
-namespace json{
+namespace json {
 
 	enum token_value
 	{
@@ -29,32 +29,32 @@ namespace json{
 		LRP = '[',
 		RRP = ']',
 		LFP = '{',
-		RFP = '}', 
+		RFP = '}',
 		QUOTE = '"',
 		MINUS = '-',
-		PLUS  = '+'
+		PLUS = '+'
 
 	};
 
 	struct unicode_decoder
 	{
 		unsigned int count;
-		void operator()(char ch)
+		void operator()(const char ch)
 		{
 			count *= 16;
-			if(std::isdigit(ch, std::locale::classic()))
+			if (std::isdigit(ch, std::locale::classic()))
 			{
 				count += ch - '0';
 			}
 			else
 			{
-				if(ch >= 'a' || ch <= 'f')
+				if (ch >= 'a' || ch <= 'f')
 				{
 					count += ch - 'a' + 10;
 				}
 				else
 				{
-					if(ch >= 'A' || ch <= 'F')
+					if (ch >= 'A' || ch <= 'F')
 					{
 						count += ch - 'A' + 10;
 					}
@@ -79,7 +79,9 @@ namespace json{
 
 	inline double str_to_double(const string&);
 
-	token_value get_token(std::istream&); 
+	inline unsigned int decode_unicode(const std::string& str);
+
+	token_value get_token(std::istream&);
 
 
 	string get_string(std::istream&);
@@ -112,7 +114,7 @@ namespace json{
 		std::stringstream stream;
 		stream.imbue(std::locale::classic());
 		stream << s;
-		stream >> val;    
+		stream >> val;
 		return val;
 #endif
 	}
@@ -126,7 +128,7 @@ namespace json{
 		std::stringstream stream;
 		stream.imbue(std::locale::classic());
 		stream << s;
-		stream >> val;    
+		stream >> val;
 		return val;
 #endif
 	}
@@ -136,10 +138,10 @@ namespace json{
 
 
 
-	std::istream& operator>>(std::istream& s, root& r)
+	std::istream& operator >> (std::istream& s, root& r)
 	{
 		token_value t = get_token(s);
-		switch(t)
+		switch (t)
 		{
 		case OBJECT_MAP:
 		case OBJECT_ARRAY:
@@ -150,9 +152,9 @@ namespace json{
 		}
 
 		char ch = 0;
-		while(!s.get(ch) == false)
+		while (!s.get(ch) == false)
 		{
-			if(!std::isspace(ch, std::locale::classic()))
+			if (!std::isspace(ch, std::locale::classic()))
 				throw std::runtime_error("misplaced data");
 			ch = 0;
 		}
@@ -170,7 +172,7 @@ namespace json{
 
 	object_ptr get_object(std::istream& s, token_value t)
 	{
-		switch(t)
+		switch (t)
 		{
 		case OBJECT_MAP:
 			return get_map_object(s);
@@ -200,11 +202,11 @@ namespace json{
 		string str;
 		str.reserve(80);
 		char ch = 0;
-		if(!s.get(ch))
+		if (!s.get(ch))
 			throw std::runtime_error("bad stream: get_string");
-		while(ch != '"')
+		while (ch != '"')
 		{
-			switch(ch)
+			switch (ch)
 			{
 			case '\\':
 				str += get_escape_sequence(s);
@@ -218,7 +220,7 @@ namespace json{
 			default:
 				str += ch;
 			}
-			if(!s.get(ch))
+			if (!s.get(ch))
 				throw std::runtime_error("bad stream: get_string");
 		}
 
@@ -230,9 +232,9 @@ namespace json{
 		string str;
 		str.resize(1);
 		char ch = 0;
-		if(!s.get(ch))
+		if (!s.get(ch))
 			throw std::runtime_error("bad stream: get_escape_sequence");
-		switch(ch)
+		switch (ch)
 		{
 		case '"':
 		case '\\':
@@ -263,35 +265,52 @@ namespace json{
 		return str;
 	}
 
+	inline unsigned int decode_unicode(const std::string& str)
+	{
+		return std::for_each(std::cbegin(str), std::cend(str), unicode_decoder()).count;
+	}
+
 	unsigned int get_unicode_code_point(std::istream& s)
 	{
 		string str;
 		str.reserve(4);
 		s >> std::setw(4) >> str >> std::setw(0);
-		if(str.size() != 4)
+		if (str.size() != 4)
+		{
 			throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected 4 characters");
-		unsigned int code =  std::for_each(str.begin(), str.end(), unicode_decoder()).count;
-		if(code >= 0xD800 && code <= 0xDBFF)
+		}
+		unsigned int code = decode_unicode(str);
+		if (code >= 0xD800 && code <= 0xDBFF)
 		{
 			char ch = 0;
-			if(!s.get(ch))
-				throw std::runtime_error("bad stream: get_unicode_code_point");
-			if(ch == '\\')
+			if (!s.get(ch))
 			{
-				if(!s.get(ch))
+				throw std::runtime_error("bad stream: get_unicode_code_point");
+			}
+			if (ch == '\\')
+			{
+				if (!s.get(ch))
+				{
 					throw std::runtime_error("bad stream: get_unicode_code_point");
-				if(ch == 'u')
+				}
+				if (ch == 'u')
 				{
 					s >> std::setw(4) >> str >> std::setw(0);
-					if(str.size() != 4)
+					if (str.size() != 4)
+					{
 						throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected 4 characters");
-					code = 0x10000 + ((code & 0x3ff) << 10) + (std::for_each(str.begin(), str.end(), unicode_decoder()).count & 0x3ff);
+					}
+					code = 0x10000 + ((code & 0x3ff) << 10) + (decode_unicode(str) & 0x3ff);
 				}
 				else
+				{
 					throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected 'u'");
+				}
 			}
 			else
+			{
 				throw std::runtime_error("bad unicode sequence: get_unicode_code_point expected '\\'");
+			}
 		}
 		return code;
 	}
@@ -299,26 +318,26 @@ namespace json{
 	string code_point_to_utf8(unsigned int code)
 	{
 		std::string str;
-		if(code <= 0x7f) 
+		if (code <= 0x7f)
 		{
 			str.resize(1);
 			str[0] = static_cast<char>(code);
-		} 
-		else if(code <= 0x7FF) 
+		}
+		else if (code <= 0x7FF)
 		{
 			str.resize(2);
 			str[0] = static_cast<char>(0xC0 | (0x1f & (code >> 6)));
 			str[1] = static_cast<char>(0x80 | (0x3f & code));
 
-		} 
-		else if(code <= 0xFFFF) 
+		}
+		else if (code <= 0xFFFF)
 		{
 			str.resize(3);
 			str[0] = static_cast<char>(0xE0 | ((0xf & (code >> 12))));
 			str[1] = static_cast<char>(0x80 | ((0x3f & (code >> 6))));
 			str[2] = static_cast<char>(0x80 | (0x3f & code));
 		}
-		else if(code <= 0x10FFFF) 
+		else if (code <= 0x10FFFF)
 		{
 			str.resize(4);
 			str[0] = static_cast<char>(0xF0 | (0x7 & (code >> 18)));
@@ -338,17 +357,17 @@ namespace json{
 		char ch = 0;
 		do
 		{
-			if(!s.get(ch))
+			if (!s.get(ch))
 			{
 				throw std::runtime_error("bad stream : get_map_object");
 			}
-		} while(std::isspace(ch, std::locale::classic()));
-		if(ch != RFP)
+		} while (std::isspace(ch, std::locale::classic()));
+		if (ch != RFP)
 		{
 			s.putback(ch);
 			do
-			{		
-				if(STRING == get_token(s))
+			{
+				if (STRING == get_token(s))
 				{
 					str = get_string(s);
 				}
@@ -356,14 +375,14 @@ namespace json{
 				{
 					throw std::runtime_error("irregular token: get_map_object wait for quote");
 				}
-				if(COLON != get_token(s))
+				if (COLON != get_token(s))
 				{
 					throw std::runtime_error("irregular token: get_map_object wait for colon");
 				}
 				map.insert(std::make_pair(str, get_object(s, get_token(s))));
 				t = get_token(s);
-			} while(t != RFP && t == COMMA);
-			if(t != RFP)
+			} while (t != RFP && t == COMMA);
+			if (t != RFP)
 			{
 				throw std::runtime_error("irregular token: get_map_object wait for RFP");
 			}
@@ -379,20 +398,20 @@ namespace json{
 		char ch = 0;
 		do
 		{
-			if(!s.get(ch))
+			if (!s.get(ch))
 			{
 				throw std::runtime_error("bad stream : get_array_object");
 			}
-		} while(std::isspace(ch, std::locale::classic()));
-		if(ch != RRP)
+		} while (std::isspace(ch, std::locale::classic()));
+		if (ch != RRP)
 		{
 			s.putback(ch);
 			do
-			{					
+			{
 				arr.push_back(get_object(s, get_token(s)));
 				t = get_token(s);
-			} while(t != RRP && t == COMMA);
-			if(t != RRP)
+			} while (t != RRP && t == COMMA);
+			if (t != RRP)
 			{
 				throw std::runtime_error("irregular token: get_array_object wait for RRP");
 			}
@@ -410,25 +429,25 @@ namespace json{
 		string str;
 		str.reserve(40);
 		char ch = 0;
-		if(!s.get(ch))
+		if (!s.get(ch))
 			throw std::runtime_error("bad stream: get_number_object");
 
-		while(std::isdigit(ch, std::locale::classic()) || ch == 'e' || ch == 'E' || ch == '.' || ch == '-' || ch == '+')
+		while (std::isdigit(ch, std::locale::classic()) || ch == 'e' || ch == 'E' || ch == '.' || ch == '-' || ch == '+')
 		{
 			str += ch;
 			ch = 0;
-			if(!s.get(ch))
+			if (!s.get(ch))
 				throw std::runtime_error("bad stream: get_number_object");
 		}
 		s.putback(ch);
 
-		if(std::find_if(str.begin(), str.end(), char_finder()) != str.end())
+		if (std::find_if(std::cbegin(str), std::cend(str), char_finder()) != std::cend(str))
 		{
-			if(str[0] == '0' &&  str.size() > 1 && str[1] != '.')
+			if (str[0] == '0' &&  str.size() > 1 && str[1] != '.')
 				throw std::runtime_error("number cannot have leading zeroes: get_number_object");
 			return make_shared<double_object>(str_to_double(str));
 		}
-		if(str[0] == '0' &&  str.size() > 1)
+		if (str[0] == '0' &&  str.size() > 1)
 			throw std::runtime_error("number cannot have leading zeroes: get_number_object");
 		return make_shared<int_object>(str_to_int(str));
 	}
@@ -439,16 +458,16 @@ namespace json{
 		string str;
 		s >> std::setw(4) >> str >> std::setw(0);
 
-		if(str == "true")
+		if (str == "true")
 		{
 			b = true;
 		}
-		else if(str == "fals")
+		else if (str == "fals")
 		{
 			char ch = 0;
-			if(!s.get(ch))
+			if (!s.get(ch))
 				throw std::runtime_error("bad stream: get_number_object");
-			if(ch == 'e')
+			if (ch == 'e')
 			{
 				b = false;
 			}
@@ -464,8 +483,8 @@ namespace json{
 	{
 		string str;
 		s >> std::setw(4) >> str >> std::setw(0);
-		if(str != "null")
-		{	
+		if (str != "null")
+		{
 			throw std::runtime_error("irregular token: get_empty_object wait for null");
 		}
 		return make_shared<null_object>();
@@ -477,12 +496,12 @@ namespace json{
 		token_value token = END;
 		do
 		{
-			if(!stream.get(ch))
+			if (!stream.get(ch))
 			{
 				return token;
 			}
-		} while(std::isspace(ch, std::locale::classic()));
-		switch(ch)
+		} while (std::isspace(ch, std::locale::classic()));
+		switch (ch)
 		{
 		case 't':
 		case 'f':
