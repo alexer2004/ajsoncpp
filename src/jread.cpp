@@ -75,7 +75,7 @@ namespace json {
 
 
 
-	inline int str_to_int(const string&);
+	inline integer str_to_int(const string&);
 
 	inline double str_to_double(const string&);
 
@@ -105,32 +105,14 @@ namespace json {
 
 	object_ptr get_empty_object(std::istream&);
 
-	inline int str_to_int(const string& s)
+	inline integer str_to_int(const string& s)
 	{
-#ifdef JSON_FAST_STRING_TO_NUMBER
-		return atoi(s.c_str());
-#else
-		int val = 0;
-		std::stringstream stream;
-		stream.imbue(std::locale::classic());
-		stream << s;
-		stream >> val;
-		return val;
-#endif
+		return static_cast<integer>(std::stoi(s));
 	}
 
 	inline double str_to_double(const string& s)
 	{
-#ifdef JSON_FAST_STRING_TO_NUMBER
-		return atof(s.c_str());
-#else
-		double val = 0.0;
-		std::stringstream stream;
-		stream.imbue(std::locale::classic());
-		stream << s;
-		stream >> val;
-		return val;
-#endif
+		return std::stod(s);
 	}
 
 

@@ -4,50 +4,18 @@
 #include "null_object.h"
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
+#include <cstdint>
 
-#if defined(JSON_BOOST_SHARED_PTR)
-#include "boost/shared_ptr.hpp"
+
+
 namespace json{
-	typedef boost::shared_ptr<object> object_ptr;
-}
-#elif defined(JSON_TR1_SHARED_PTR) 
-#include <memory>
-namespace json{
-	typedef std::tr1::shared_ptr<object> object_ptr;
-}
-#else
-#include <memory>
-namespace json{
+	typedef std::int32_t integer;
+	
 	typedef std::shared_ptr<object> object_ptr;
-}
-#endif
-
-
-#if defined(JSON_BOOST_UNORDERED_MAP)
-#include "boost/unordered_map.hpp"
-namespace json{
-	typedef std::string string;			    //utf-8
-	typedef boost::unordered_map<string, object_ptr> ptr_map;
-}
-#elif defined(JSON_TR1_UNORDERED_MAP)
-#include <unordered_map>
-namespace json{
-	typedef std::string string;				//utf-8
-	typedef std::tr1::unordered_map<string, object_ptr> ptr_map;
-}
-#else
-#include <unordered_map>
-namespace json{
 	typedef std::string string;				//utf-8
 	typedef std::unordered_map<string, object_ptr> ptr_map;
-}
-
-#endif
-
-
-
-namespace json{
-
 	template<class T> class value_object;
 	typedef value_object<bool> bool_object;
 	typedef value_object<string> string_object;

@@ -4,6 +4,6 @@ project (json)
 
 add_executable (${PROJECT_NAME} json.cpp)
 
-target_link_libraries (${PROJECT_NAME} jsoncpp)
+target_link_libraries (${PROJECT_NAME} ajsoncpp)
 
-add_dependencies (${PROJECT_NAME} jsoncpp)
+add_dependencies (${PROJECT_NAME} ajsoncpp)
