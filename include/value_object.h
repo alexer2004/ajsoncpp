@@ -7,62 +7,28 @@
 namespace json{
 
 
-	template<class T> class value_object : public object
+	template<class T> class value_object final : public object 
 	{
 	public:
 		typedef T value_type;
-		value_object()
-		{
-		}
+		value_object() = default;
+		
 		explicit value_object(const value_type& v)
 			:val(v)
 		{
 		}
-
-		value_object(const value_object<T>& v)
-			:val(v.val)
-		{
-		} 
-
-#ifdef JSON_TR1_SHARED_PTR
-		value_object<T>& operator=(const value_object<T>& v)
-		{
-			if(this != &v)
-			{
-				val = v.val;
-			}
-			return *this;
-		}
-#else 
-		value_object(value_object<T>&& o)
-			:val(move(o.val))
-		{
-
-		}
-
 		value_object(value_type&& v)
 			:val(move(v))
 		{
 
 		}
 
-		value_object<T>& operator=(const value_object<T> v)
-		{
-			v.swap(*this);		
-			return *this;
-		}
-
-
-		void swap(value_object<T>& o)
-		{
-			swap(val, o.val);
-		}
-
-#endif // !JSON_TR1_SHARED_PTR
-
-
-
-		~value_object(){;}	
+		value_object(const value_object<T>& v) = default;
+		value_object(value_object<T>&& o) = default;
+		value_object<T>& operator=(const value_object<T>& v) = default;
+		value_object<T>& operator=(value_object<T>&& v) = default;
+		
+		~value_object() = default;
 		value_type& value()
 		{
 			return const_cast<value_type&>(static_cast<const value_object&>(*this).value());
